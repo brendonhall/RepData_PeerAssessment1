@@ -8,7 +8,8 @@ output:
 
 ## Loading and preprocessing the data
 
-```{r loadData,setoptions,echo=TRUE}
+
+```r
 #load the data from activity.csv from working directory
 activityData <- read.csv("activity.csv", na.strings=c("NA"), header=TRUE)
 #convert date column to Date type (instead of character)
@@ -24,21 +25,44 @@ activityData$dateTime <- strptime(paste(activityData$date, activityData$time), f
 ```
 
 ## What is mean total number of steps taken per day?
-```{r totals,echo=TRUE}
+
+```r
 totalSteps <- aggregate(activityData["steps"], by=activityData["date"], FUN=sum, na.rm=TRUE)
 hist(totalSteps$steps, breaks=20, xlab="Total Steps per day", main="Histogram of Total Steps per day")
+```
+
+![plot of chunk totals](figure/totals-1.png) 
+
+```r
 mean(totalSteps$steps)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(totalSteps$steps)
+```
+
+```
+## [1] 10395
 ```
 
 
 ## What is the average daily activity pattern?
 
-```{r averageDaily, echo=TRUE}
+
+```r
 dailyPattern <- aggregate(activityData["steps"], by=activityData["time"], FUN=mean, na.rm=TRUE)
 colnames(dailyPattern)[2] <- "averageSteps"
 
 plot(x=strptime(dailyPattern$time, format="%H:%M"),y=dailyPattern$averageSteps, type='l', xlab="Time", ylab="Average steps")
+```
+
+![plot of chunk averageDaily](figure/averageDaily-1.png) 
+
+```r
 #index of time interval with maximum steps
 index <- which.max(dailyPattern$averageSteps)
 #time of maximum steps
@@ -47,14 +71,25 @@ maxTime <- dailyPattern[index,1]
 sprintf("The 5 minute interval with the highest average number of steps is at %s", strftime(strptime( maxTime,format="%H:%M"), format="%H:%M %p"))
 ```
 
+```
+## [1] "The 5 minute interval with the highest average number of steps is at 08:35 AM"
+```
+
 
 
 ## Inputing missing values
-```{r fillMissing,echo=TRUE}
+
+```r
 #find the total number of missing values
 numMissing <- sum(is.na(activityData$steps))
 sprintf('There are %s missing values.', numMissing)
+```
 
+```
+## [1] "There are 2304 missing values."
+```
+
+```r
 #merge average number of steps by interval into activityData
 activityData <- merge(activityData, dailyPattern, by="time")
 #sort activityData so the rows are in chronological order
@@ -64,17 +99,40 @@ activityData$steps[is.na(activityData$steps)] <- activityData$averageSteps[is.na
 
 totalStepsFilled <- aggregate(activityData["steps"], by=activityData["date"], FUN=sum, na.rm=TRUE)
 hist(totalStepsFilled$steps, breaks=20, xlab="Total Steps per day", main="Histogram of Total Steps per day")
+```
+
+![plot of chunk fillMissing](figure/fillMissing-1.png) 
+
+```r
 meanSteps<-mean(totalStepsFilled$steps)
 medianSteps<-median(totalStepsFilled$steps)
 meanSteps
-medianSteps
-sprintf("After filling in missing values with inteval averages, the mean number of steps per day is %.1f and the median is %.1f", meanSteps, medianSteps)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
+medianSteps
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+sprintf("After filling in missing values with inteval averages, the mean number of steps per day is %.1f and the median is %.1f", meanSteps, medianSteps)
+```
+
+```
+## [1] "After filling in missing values with inteval averages, the mean number of steps per day is 10766.2 and the median is 10766.2"
 ```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r weekdayCompare,echo=TRUE}
+
+```r
 #define weekend day classes
 weekendDays = c('Saturday', 'Sunday')
 #initialize dayType column, first by giving every day the weekend label
@@ -87,5 +145,6 @@ library(lattice)
 xyplot(dailyPattern2$aveSteps ~ as.POSIXct(strptime(dailyPattern2$time, format="%H:%M")) | dailyPattern2$dayType, 
        layout=c(1,2), type='l', xlab='Time', ylab="Number of steps",
        scales=list(format="%H:%M"))
-
 ```
+
+![plot of chunk weekdayCompare](figure/weekdayCompare-1.png) 
