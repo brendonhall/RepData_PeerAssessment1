@@ -5,9 +5,16 @@ output:
     keep_md: true
 ---
 
+This assignment analyzes two months of fitness data for an individual.  It tracks the number of steps taken in 5 minute intervals during October and November 2012.
+
+The data is located in this repository, by unzipping the 'activity.zip' file.  The variables in the dataset are:
+
+-  steps: Number of steps taken in the 5-minute interval (there are some missing values, denoted NA)
+-  date: the date on which the measurement was taken
+-  interval: an indentifier for the 5 minute interval the measurement was taken in
 
 ## Loading and preprocessing the data
-
+The data is in csv format.  The date column is converted from a character type to a Date type.  A time stamp column is added by converting the interval column into a time format.  Finally the date and time columns are combined into a POSIX time object.
 
 ```r
 #load the data from activity.csv from working directory
@@ -25,6 +32,7 @@ activityData$dateTime <- strptime(paste(activityData$date, activityData$time), f
 ```
 
 ## What is mean total number of steps taken per day?
+The activity data for each day are combined using the aggregate function.  The number of steps per interval is summed.  
 
 ```r
 totalSteps <- aggregate(activityData["steps"], by=activityData["date"], FUN=sum, na.rm=TRUE)
@@ -34,23 +42,18 @@ hist(totalSteps$steps, breaks=20, xlab="Total Steps per day", main="Histogram of
 ![plot of chunk totals](figure/totals-1.png) 
 
 ```r
-mean(totalSteps$steps)
+meanSteps<-mean(totalSteps$steps)
+medianSteps<-median(totalSteps$steps)
+sprintf("The mean number of steps per day is %.1f and the median is %.1f", meanSteps, medianSteps)
 ```
 
 ```
-## [1] 9354.23
+## [1] "The mean number of steps per day is 9354.2 and the median is 10395.0"
 ```
-
-```r
-median(totalSteps$steps)
-```
-
-```
-## [1] 10395
-```
-
+The histogram shows the distribution in the daily total number of steps.  However, there are a large number of days with 0 total steps.  This is due to a large number of missing (NA) values in the data.  The mean number of steps per day is 9354.2 and the median is 10395.0.
 
 ## What is the average daily activity pattern?
+By averaging the number of steps during the same 5 minute interval everyday, an activity profile over the course of a day can be obtained.  The data is aggregated by the time interval, and the mean of the steps taken in every time interval is obtained.
 
 
 ```r
@@ -61,6 +64,7 @@ plot(x=strptime(dailyPattern$time, format="%H:%M"),y=dailyPattern$averageSteps, 
 ```
 
 ![plot of chunk averageDaily](figure/averageDaily-1.png) 
+The time interval that has the highest mean number of steps is found to occur at 8:35 PM.
 
 ```r
 #index of time interval with maximum steps
@@ -78,6 +82,7 @@ sprintf("The 5 minute interval with the highest average number of steps is at %s
 
 
 ## Inputing missing values
+The number of missing values makes the data appear to have more inactive periods than it actually does (shown in the histrogram above as a large number of zero days.)  The bias is alleviated by using the average number of steps during each interval, and filling in NA values with this interval average.
 
 ```r
 #find the total number of missing values
@@ -102,6 +107,8 @@ hist(totalStepsFilled$steps, breaks=20, xlab="Total Steps per day", main="Histog
 ```
 
 ![plot of chunk fillMissing](figure/fillMissing-1.png) 
+This histogram shows has a more unbiased distribution than the one above, and doesn't have a large number of apparent zero step days.
+
 
 ```r
 meanSteps<-mean(totalStepsFilled$steps)
@@ -131,6 +138,7 @@ sprintf("After filling in missing values with inteval averages, the mean number 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+The activity patterns of weekdays vs. weekends can be compared by labeling the observations as belonging to a weekend or a weekday, and aggregrating the data by both the interval and the day type.
 
 ```r
 #define weekend day classes
@@ -139,7 +147,7 @@ weekendDays = c('Saturday', 'Sunday')
 activityData$dayType <- 'weekday'
 #if the weekday matches the weekend day pattern, give it the weekend label
 activityData$dayType[weekdays(activityData$date) %in% weekendDays] <- 'weekend'
-
+#aggregate the data by both the interval timestamp and the day type
 dailyPattern2<-aggregate(list(aveSteps=activityData$steps), by=list(time=activityData$time,dayType=activityData$dayType),FUN=mean)
 library(lattice)
 xyplot(dailyPattern2$aveSteps ~ as.POSIXct(strptime(dailyPattern2$time, format="%H:%M")) | dailyPattern2$dayType, 
@@ -148,3 +156,5 @@ xyplot(dailyPattern2$aveSteps ~ as.POSIXct(strptime(dailyPattern2$time, format="
 ```
 
 ![plot of chunk weekdayCompare](figure/weekdayCompare-1.png) 
+
+The weekday data shows a larger number of steps earlier in the morning (between 6am and 11am), and a lower and relativly constant number of steps during the day, which drops off around 7pm.  The weekend data suggests strong activity starts later in the morning (about 9am) and a higher level of activity during the day, and drops off around 9pm.
