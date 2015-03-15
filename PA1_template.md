@@ -50,6 +50,7 @@ sprintf("The mean number of steps per day is %.1f and the median is %.1f", meanS
 ```
 ## [1] "The mean number of steps per day is 9354.2 and the median is 10395.0"
 ```
+
 The histogram shows the distribution in the daily total number of steps.  However, there are a large number of days with 0 total steps.  This is due to a large number of missing (NA) values in the data.  The mean number of steps per day is 9354.2 and the median is 10395.0.
 
 ## What is the average daily activity pattern?
@@ -64,6 +65,7 @@ plot(x=strptime(dailyPattern$time, format="%H:%M"),y=dailyPattern$averageSteps, 
 ```
 
 ![plot of chunk averageDaily](figure/averageDaily-1.png) 
+
 The time interval that has the highest mean number of steps is found to occur at 8:35 PM.
 
 ```r
@@ -107,6 +109,7 @@ hist(totalStepsFilled$steps, breaks=20, xlab="Total Steps per day", main="Histog
 ```
 
 ![plot of chunk fillMissing](figure/fillMissing-1.png) 
+
 This histogram shows has a more unbiased distribution than the one above, and doesn't have a large number of apparent zero step days.
 
 
